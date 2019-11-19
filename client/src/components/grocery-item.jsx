@@ -2,32 +2,53 @@
 import React from 'react';
 import axios from 'axios';
 
-const GroceryItem = (props) => {
+class GroceryItem extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      name: this.props.name,
+      quantity: this.props.quantity
+    };
 
-  const removeFromList = (event) => {
+    this.removeFromList = this.removeFromList.bind(this);
+  }
+
+  removeFromList(event) {
     axios.delete(`http://localhost:3000/groceries`, {
       params: {
-        name: event.target.innerText
+        name: this.props.name
       }
     })
-    .then(() => props.getGroceries())
+    .then(() => this.props.getGroceries())
     .catch(err => console.log(err));
-  };
+  }
 
-  // const increment = () => {
-  //   axios.get(`http://localhost:3000/groceries/${}`)
-  // };
+  decrement() {
+    axios.put(`http://localhost:3000/groceries/${this.state.name}`, {
+      quantity: this.state.quantity - 1
+    }).then(() => this.props.getGroceries()).then(() => this.setState({quantity: this.state.quantity - 1})).then(() => {
+      if (this.state.quantity < 1) {
+        this.removeFromList();
+      }
+    }).catch(err => console.log(err));
+  }
 
-  // const decrement = () => {
+  increment() {
+    axios.put(`http://localhost:3000/groceries/${this.state.name}`, {
+      quantity: this.state.quantity + 1
+    }).then(() => this.props.getGroceries()).then(() => this.setState({quantity: this.state.quantity + 1})).catch(err => console.log(err));
+  }
 
-  // };
-
-  return (
-    <li className='grocery-item'>
-      <span onClick={(event) => {removeFromList(event)}} className="grocery-name"> {props.name} </span>
-      <span className="grocery-quantity"> {props.quantity} </span>
-    </li>
-  );
+  render() {
+    return (
+      <li className='grocery-item'>
+        <span onClick={(event) => {this.removeFromList(event)}} className="grocery-name"> {this.props.name} </span>
+        <span className="grocery-quantity"> {this.props.quantity} </span>
+        <button onClick={() => this.decrement()}> - </button>
+        <button onClick={() => this.increment()}> + </button>
+      </li>
+    );
+  }
 };
 
 export default GroceryItem;
